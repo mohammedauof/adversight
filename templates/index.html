@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AdverSight — Adversarial ML Sandbox</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- Background grid -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <span class="logo-bracket">[</span>
+      AdverSight
+      <span class="logo-bracket">]</span>
+    </div>
+    <div class="tagline">Adversarial Machine Learning Sandbox</div>
+    <div class="header-sub">Visualize how imperceptible noise fools state-of-the-art AI models</div>
+  </header>
+
+  <!-- Main -->
+  <main>
+
+    <!-- Upload Section -->
+    <section class="card upload-card">
+      <div class="card-label">01 — INPUT</div>
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">⬆</div>
+        <div class="upload-text">Drop an image or click to upload</div>
+        <div class="upload-sub">JPG, PNG, WEBP · Any ImageNet-class object works best</div>
+        <input type="file" id="fileInput" accept="image/*" hidden/>
+      </div>
+      <div class="preview-wrap" id="previewWrap" style="display:none">
+        <img id="previewImg" src="" alt="Preview"/>
+        <button class="reset-btn" id="resetBtn">✕ Remove</button>
+      </div>
+    </section>
+
+    <!-- Controls Section -->
+    <section class="card controls-card">
+      <div class="card-label">02 — ATTACK PARAMETERS</div>
+      <div class="controls-grid">
+
+        <div class="control-group">
+          <label>Attack Method</label>
+          <div class="toggle-group">
+            <button class="toggle-btn active" data-val="fgsm" id="btnFGSM">FGSM</button>
+            <button class="toggle-btn" data-val="pgd" id="btnPGD">PGD</button>
+          </div>
+          <div class="control-desc" id="attackDesc">
+            Fast Gradient Sign Method — single-step attack. Fast and effective.
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label>Epsilon (ε) — Perturbation Strength</label>
+          <div class="slider-row">
+            <input type="range" id="epsilonSlider" min="0.001" max="0.1" step="0.001" value="0.03"/>
+            <span class="slider-val" id="epsilonVal">0.030</span>
+          </div>
+          <div class="epsilon-scale">
+            <span>Subtle</span><span>Visible</span>
+          </div>
+        </div>
+
+      </div>
+
+      <button class="attack-btn" id="attackBtn" disabled>
+        <span class="btn-icon">⚡</span>
+        <span class="btn-text">Run Attack</span>
+      </button>
+    </section>
+
+    <!-- Loading -->
+    <div class="loading-bar" id="loadingBar" style="display:none">
+      <div class="loading-inner"></div>
+      <div class="loading-text">Running adversarial attack...</div>
+    </div>
+
+    <!-- Results Section -->
+    <section class="card results-card" id="resultsCard" style="display:none">
+      <div class="card-label">03 — RESULTS</div>
+
+      <!-- Attack status badge -->
+      <div class="status-badge" id="statusBadge"></div>
+
+      <!-- Image comparison -->
+      <div class="comparison-grid">
+
+        <div class="img-panel">
+          <div class="panel-label">Original</div>
+          <img id="origImg" src="" alt="Original"/>
+          <div class="panel-pred" id="origPred"></div>
+        </div>
+
+        <div class="img-panel noise-panel">
+          <div class="panel-label">Perturbation Noise <span class="noise-note">(10× amplified)</span></div>
+          <img id="noiseImg" src="" alt="Noise"/>
+          <div class="panel-pred noise-text">Invisible to humans</div>
+        </div>
+
+        <div class="img-panel">
+          <div class="panel-label">Perturbed</div>
+          <img id="pertImg" src="" alt="Perturbed"/>
+          <div class="panel-pred" id="pertPred"></div>
+        </div>
+
+      </div>
+
+      <!-- Confidence bars -->
+      <div class="conf-section">
+        <div class="conf-col">
+          <div class="conf-title">Original — Top 5 Predictions</div>
+          <div id="origBars"></div>
+        </div>
+        <div class="conf-col">
+          <div class="conf-title">After Attack — Top 5 Predictions</div>
+          <div id="pertBars"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Info Section -->
+    <section class="card info-card">
+      <div class="card-label">04 — HOW IT WORKS</div>
+      <div class="info-grid">
+        <div class="info-block">
+          <div class="info-icon">🧠</div>
+          <div class="info-title">The Model</div>
+          <div class="info-text">ResNet-50 pretrained on ImageNet — a state-of-the-art image classifier trained on 1.2 million images across 1000 categories.</div>
+        </div>
+        <div class="info-block">
+          <div class="info-icon">⚡</div>
+          <div class="info-title">FGSM Attack</div>
+          <div class="info-text">Computes the gradient of the loss with respect to each pixel, then nudges pixels in the direction that maximally increases the model's error.</div>
+        </div>
+        <div class="info-block">
+          <div class="info-icon">🔁</div>
+          <div class="info-title">PGD Attack</div>
+          <div class="info-text">Projected Gradient Descent — iterates FGSM multiple times with smaller steps, producing a stronger and more targeted perturbation.</div>
+        </div>
+        <div class="info-block">
+          <div class="info-icon">🔒</div>
+          <div class="info-title">Why It Matters</div>
+          <div class="info-text">Adversarial vulnerabilities affect real-world AI systems — from facial recognition to autonomous vehicles. Understanding them is key to building robust AI.</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <span>AdverSight</span> — Built by <a href="https://auof.in" target="_blank">Mohammed Auof</a> · ResNet-50 + FGSM/PGD · PyTorch
+  </footer>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
